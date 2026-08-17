@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Painel — Banco de Horas{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <p class="eyebrow">{{ hoje.strftime('%A, %d de %B de %Y') }}</p>
+  <h1>Olá, {{ current_user.nome.split(' ')[0] }}</h1>
+</div>
+
+<div class="grid-2" style="margin-bottom:16px;">
+  <div class="card saldo-hero">
+    <span class="eyebrow">Saldo do banco de horas</span>
+    <span class="saldo-valor {{ 'positivo' if saldo_total.total_seconds() >= 0 else 'negativo' }}">{{ saldo_total_fmt }}</span>
+    <span class="legenda">
+      {% if saldo_total.total_seconds() >= 0 %}
+        Você está com crédito de horas acumulado.
+      {% else %}
+        Você está devendo horas — atenção ao saldo.
+      {% endif %}
+    </span>
+  </div>
+
+  <div class="grid-3" style="grid-template-columns:1fr 1fr;">
+    <div class="card mini-stat">
+      <div class="eyebrow">Saldo — semana</div>
+      <div class="valor {{ 'positivo' if resumo_semana.total_saldo.total_seconds() >= 0 else 'negativo' }}">{{ resumo_semana.total_saldo_fmt }}</div>
+    </div>
+    <div class="card mini-stat">
+      <div class="eyebrow">Saldo — mês</div>
+      <div class="valor {{ 'positivo' if resumo_mes.total_saldo.total_seconds() >= 0 else 'negativo' }}">{{ resumo_mes.total_saldo_fmt }}</div>
+    </div>
+    <div class="card mini-stat">
+      <div class="eyebrow">Trabalhado — semana</div>
+      <div class="valor">{{ resumo_semana.total_trabalhado_fmt.replace('+','') }}</div>
+    </div>
+    <div class="card mini-stat">
+      <div class="eyebrow">Jornada padrão</div>
+      <div class="valor">{{ resumo_semana.jornada_padrao }}h /dia</div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px;">
+  {% if lancamento_hoje %}
+    {% if lancamento_hoje.em_aberto() %}
+      <p style="margin:0 0 12px;font-size:13.5px;color:var(--ink-muted);">
+        Ponto de hoje em aberto — entrada às <strong class="tabular">{{ lancamento_hoje.hora_entrada.strftime('%H:%M') }}</strong>, ainda sem saída registrada.
+      </p>
+    {% else %}
+      <p style="margin:0 0 12px;font-size:13.5px;color:var(--ink-muted);">Ponto de hoje já lançado.</p>
+    {% endif %}
+    <a class="btn btn-secundario" href="{{ url_for('main.editar_lancamento', entry_id=lancamento_hoje.id) }}">Editar lançamento de hoje</a>
+  {% else %}
+    <p style="margin:0 0 12px;font-size:13.5px;color:var(--ink-muted);">Você ainda não lançou o ponto de hoje.</p>
+    <a class="btn btn-primario" href="{{ url_for('main.lancar') }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+      Lançar ponto
+    </a>
+  {% endif %}
+</div>
+
+<div class="card">
+  <p class="eyebrow" style="margin:0 0 4px;">Últimos lançamentos</p>
+  {% if ultimos %}
+  <div class="extrato">
+    {% for lanc in ultimos %}
+    <div class="extrato-linha">
+      <div class="extrato-data">{{ lanc.data|data_br }}<span class="dia-semana">{{ lanc.data|dia_semana }}</span></div>
+      <div class="extrato-detalhe">
+        <span class="tabular">{{ lanc.hora_entrada.strftime('%H:%M') }}</span>
+        →
+        <span class="tabular">{{ lanc.hora_saida.strftime('%H:%M') if lanc.hora_saida else '—' }}</span>
+        {% if lanc.pausas %}<span class="tag">{{ lanc.pausas|length }} pausa{{ 's' if lanc.pausas|length > 1 }}</span>{% endif %}
+        {% if lanc.observacao %}<div class="obs">{{ lanc.observacao }}</div>{% endif %}
+      </div>
+      {% if lanc.em_aberto() %}
+        <div class="extrato-saldo aberto">em aberto</div>
+      {% else %}
+        {% set saldo = lanc.saldo_dia(resumo_semana.jornada_padrao) %}
+        <div class="extrato-saldo {{ 'positivo' if saldo.total_seconds() >= 0 else 'negativo' }}">
+          {{ saldo|fmt_saldo }}
+        </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">Nenhum lançamento ainda. Comece registrando o ponto de hoje.</div>
+  {% endif %}
+</div>
+
+{% endblock %}

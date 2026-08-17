@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Relatórios — Banco de Horas{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <p class="eyebrow">Para o gestor</p>
+  <h1>Relatórios</h1>
+</div>
+
+<div class="card" style="margin-bottom:16px;">
+  <form method="POST" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr auto auto;align-items:end;gap:12px;">
+      <div>{{ form.periodo.label }}{{ form.periodo() }}</div>
+      <div>{{ form.data_referencia.label }}{{ form.data_referencia() }}</div>
+      <div>{{ form.formato.label }}{{ form.formato() }}</div>
+      <button class="btn btn-secundario" type="submit">Pré-visualizar</button>
+      <button class="btn btn-primario" type="submit" name="exportar" value="1">Exportar</button>
+    </div>
+  </form>
+</div>
+
+{% if resumo %}
+<div class="card">
+  <div style="display:flex;gap:28px;margin-bottom:16px;">
+    <div>
+      <div class="eyebrow" style="font-family:var(--font-mono);font-size:11px;text-transform:uppercase;color:var(--ink-faint);">Total trabalhado</div>
+      <div class="tabular" style="font-size:20px;font-weight:600;">{{ resumo.total_trabalhado_fmt }}</div>
+    </div>
+    <div>
+      <div class="eyebrow" style="font-family:var(--font-mono);font-size:11px;text-transform:uppercase;color:var(--ink-faint);">Saldo do período</div>
+      <div class="tabular" style="font-size:20px;font-weight:600;color:{{ 'var(--positivo)' if resumo.total_saldo.total_seconds() >= 0 else 'var(--negativo)' }}">{{ resumo.total_saldo_fmt }}</div>
+    </div>
+  </div>
+
+  {% if resumo.linhas %}
+  <table>
+    <thead><tr><th>Data</th><th>Entrada</th><th>Saída</th><th>Trabalhado</th><th>Saldo</th></tr></thead>
+    <tbody>
+      {% for linha in resumo.linhas %}
+      <tr>
+        <td class="tabular">{{ linha.lancamento.data|data_br }}</td>
+        <td class="tabular">{{ linha.lancamento.hora_entrada.strftime('%H:%M') }}</td>
+        <td class="tabular">{{ linha.lancamento.hora_saida.strftime('%H:%M') if linha.lancamento.hora_saida else '—' }}</td>
+        <td class="tabular">{{ linha.trabalhado_fmt }}</td>
+        <td class="tabular" style="font-weight:600;color:{{ 'var(--positivo)' if linha.saldo.total_seconds() >= 0 else 'var(--negativo)' }}">{{ linha.saldo_fmt }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">Nenhum lançamento no período selecionado.</div>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Lançar ponto — Banco de Horas{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <p class="eyebrow">Registro de ponto</p>
+  <h1>{{ 'Editar lançamento' if editando else 'Lançar ponto' }}</h1>
+</div>
+
+<div class="card">
+  <form method="POST" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="form-grid">
+      <div class="form-row">
+        <div>
+          {{ form.data.label }}
+          {{ form.data() }}
+        </div>
+        <div>
+          {{ form.hora_entrada.label }}
+          {{ form.hora_entrada() }}
+        </div>
+      </div>
+
+      <fieldset>
+        <legend>Pausa (almoço)</legend>
+        <div class="form-row">
+          <div>{{ form.pausa1_saida.label }}{{ form.pausa1_saida() }}</div>
+          <div>{{ form.pausa1_retorno.label }}{{ form.pausa1_retorno() }}</div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Pausa extra (lanche)</legend>
+        <div class="form-row">
+          <div>{{ form.pausa2_saida.label }}{{ form.pausa2_saida() }}</div>
+          <div>{{ form.pausa2_retorno.label }}{{ form.pausa2_retorno() }}</div>
+        </div>
+      </fieldset>
+
+      <div>
+        {{ form.hora_saida.label }}
+        {{ form.hora_saida() }}
+        <p style="font-size:12px;color:var(--ink-faint);margin:6px 0 0;">Deixe em branco se ainda não saiu — você pode voltar aqui mais tarde para completar.</p>
+      </div>
+
+      <div>
+        {{ form.observacao.label }}
+        {{ form.observacao(placeholder="Ex.: compensação, hora extra autorizada, etc.") }}
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-primario" type="submit">{{ 'Salvar alterações' if editando else 'Registrar lançamento' }}</button>
+        <a class="btn btn-secundario" href="{{ url_for('main.dashboard') }}">Cancelar</a>
+      </div>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

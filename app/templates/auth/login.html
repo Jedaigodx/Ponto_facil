@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Entrar — Banco de Horas{% endblock %}
+{% block auth_content %}
+<div class="auth-shell">
+  <div class="auth-card">
+    <div class="brand">EXTRATO<span class="dot">·</span>HORAS</div>
+    <p class="subtitulo">Controle de ponto e banco de horas</p>
+    <form method="POST" novalidate>
+      {{ form.hidden_tag() }}
+      <div>
+        {{ form.email.label }}
+        {{ form.email(placeholder="voce@exemplo.mil.br") }}
+      </div>
+      <div>
+        {{ form.senha.label }}
+        {{ form.senha(placeholder="••••••••") }}
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;font-weight:400;">
+        {{ form.lembrar() }} Manter conectado
+      </label>
+      <button class="btn btn-primario" type="submit">Entrar</button>
+    </form>
+    <div class="auth-links">Ainda não tem conta? <a href="{{ url_for('auth.cadastro') }}">Cadastre-se</a></div>
+  </div>
+</div>
+{% endblock %}

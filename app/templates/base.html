@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Banco de Horas{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+{% if current_user.is_authenticated %}
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">EXTRATO<span class="dot">·</span>HORAS</div>
+    <nav class="nav">
+      <a href="{{ url_for('main.dashboard') }}" class="{{ 'ativo' if request.endpoint == 'main.dashboard' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        Painel
+      </a>
+      <a href="{{ url_for('main.lancar') }}" class="{{ 'ativo' if request.endpoint == 'main.lancar' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Lançar ponto
+      </a>
+      <a href="{{ url_for('main.historico') }}" class="{{ 'ativo' if request.endpoint == 'main.historico' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        Histórico
+      </a>
+      <a href="{{ url_for('reports.relatorios') }}" class="{{ 'ativo' if request.endpoint == 'reports.relatorios' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M9 13h6M9 17h6"/></svg>
+        Relatórios
+      </a>
+      <a href="{{ url_for('main.perfil') }}" class="{{ 'ativo' if request.endpoint == 'main.perfil' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+        Perfil
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="avatar">
+        {% if current_user.foto_perfil %}<img src="{{ current_user.foto_perfil }}" alt="">
+        {% else %}{{ current_user.nome[:2]|upper }}{% endif %}
+      </div>
+      <div>
+        <div class="nome">{{ current_user.nome.split(' ')[0] }}</div>
+        <a class="sair" href="{{ url_for('auth.logout') }}">Sair</a>
+      </div>
+    </div>
+  </aside>
+  <main class="main">
+    {% include "_flashes.html" %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+{% else %}
+  {% include "_flashes.html" %}
+  {% block auth_content %}{% endblock %}
+{% endif %}
+</body>
+</html>

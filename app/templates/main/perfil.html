@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Perfil — Banco de Horas{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <p class="eyebrow">Conta</p>
+  <h1>Meu perfil</h1>
+</div>
+
+<div class="grid-2">
+  <div class="card" style="text-align:center;">
+    <div class="avatar" style="width:96px;height:96px;font-size:28px;margin:0 auto 14px;">
+      {% if current_user.foto_perfil %}<img src="{{ current_user.foto_perfil }}" alt="">
+      {% else %}{{ current_user.nome[:2]|upper }}{% endif %}
+    </div>
+    <div style="font-weight:600;">{{ current_user.nome }}</div>
+    <div style="font-size:13px;color:var(--ink-muted);">{{ current_user.email }}</div>
+    {% if current_user.matricula %}<div style="font-size:12px;color:var(--ink-faint);margin-top:4px;">Matrícula {{ current_user.matricula }}</div>{% endif %}
+  </div>
+
+  <div class="card">
+    <form method="POST" enctype="multipart/form-data" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="form-grid">
+        <div>
+          {{ form.nome.label }}
+          {{ form.nome() }}
+        </div>
+        <div>
+          {{ form.jornada_diaria_horas.label }}
+          {{ form.jornada_diaria_horas(placeholder="Padrão do sistema: " ~ config.JORNADA_PADRAO_HORAS ~ "h") }}
+        </div>
+        <div>
+          {{ form.foto.label }}
+          {{ form.foto() }}
+        </div>
+        <button class="btn btn-primario" type="submit" style="justify-self:start;">Salvar alterações</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

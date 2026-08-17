@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Histórico — Banco de Horas{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <p class="eyebrow">Registros</p>
+  <h1>Histórico de lançamentos</h1>
+</div>
+
+<div class="card">
+  {% if paginacao.items %}
+  <table>
+    <thead>
+      <tr>
+        <th>Data</th><th>Entrada</th><th>Saída</th><th>Pausas</th><th>Saldo do dia</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for lanc in paginacao.items %}
+      <tr>
+        <td class="tabular">{{ lanc.data|data_br }} <span style="color:var(--ink-faint);">{{ lanc.data|dia_semana }}</span></td>
+        <td class="tabular">{{ lanc.hora_entrada.strftime('%H:%M') }}</td>
+        <td class="tabular">{{ lanc.hora_saida.strftime('%H:%M') if lanc.hora_saida else '—' }}</td>
+        <td>{{ lanc.pausas|length }}</td>
+        <td>
+          {% if lanc.em_aberto() %}
+            <span style="color:var(--ink-faint);">em aberto</span>
+          {% else %}
+            {% set saldo = lanc.saldo_dia(current_user.jornada_horas(jornada_padrao)) %}
+            <span class="tabular" style="font-weight:600;color:{{ 'var(--positivo)' if saldo.total_seconds() >= 0 else 'var(--negativo)' }}">{{ saldo|fmt_saldo }}</span>
+          {% endif %}
+        </td>
+        <td class="acoes">
+          <a href="{{ url_for('main.editar_lancamento', entry_id=lanc.id) }}">Editar</a>
+          <form method="POST" action="{{ url_for('main.excluir_lancamento', entry_id=lanc.id) }}" onsubmit="return confirm('Excluir este lançamento?');">
+            <button type="submit" class="excluir">Excluir</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if paginacao.pages > 1 %}
+  <div class="paginacao">
+    {% for p in range(1, paginacao.pages + 1) %}
+      {% if p == paginacao.page %}<span class="atual">{{ p }}</span>
+      {% else %}<a href="{{ url_for('main.historico', pagina=p) }}">{{ p }}</a>{% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="empty-state">Nenhum lançamento encontrado.</div>
+  {% endif %}
+</div>
+
+{% endblock %}

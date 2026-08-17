@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Criar conta — Banco de Horas{% endblock %}
+{% block auth_content %}
+<div class="auth-shell">
+  <div class="auth-card">
+    <div class="brand">EXTRATO<span class="dot">·</span>HORAS</div>
+    <p class="subtitulo">Criar sua conta</p>
+    <form method="POST" novalidate>
+      {{ form.hidden_tag() }}
+      <div>
+        {{ form.nome.label }}
+        {{ form.nome(placeholder="Seu nome completo") }}
+      </div>
+      <div>
+        {{ form.email.label }}
+        {{ form.email(placeholder="voce@exemplo.mil.br") }}
+      </div>
+      <div>
+        {{ form.matricula.label }}
+        {{ form.matricula(placeholder="Opcional") }}
+      </div>
+      <div>
+        {{ form.senha.label }}
+        {{ form.senha(placeholder="Mínimo 6 caracteres") }}
+      </div>
+      <div>
+        {{ form.confirmar_senha.label }}
+        {{ form.confirmar_senha(placeholder="Repita a senha") }}
+      </div>
+      <button class="btn btn-primario" type="submit">Criar conta</button>
+    </form>
+    <div class="auth-links">Já tem conta? <a href="{{ url_for('auth.login') }}">Entrar</a></div>
+  </div>
+</div>
+{% endblock %}
