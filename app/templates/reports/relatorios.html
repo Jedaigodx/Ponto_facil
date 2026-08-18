@@ -10,22 +10,28 @@
 <div class="card" style="margin-bottom:16px;">
   <form method="POST" novalidate>
     {{ form.hidden_tag() }}
-    <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr auto auto;align-items:end;gap:12px;">
+    <div class="form-row relatorio-form-row">
       <div>{{ form.periodo.label }}{{ form.periodo() }}</div>
       <div>{{ form.data_referencia.label }}{{ form.data_referencia() }}</div>
       <div>{{ form.formato.label }}{{ form.formato() }}</div>
-      <button class="btn btn-secundario" type="submit">Pré-visualizar</button>
-      <button class="btn btn-primario" type="submit" name="exportar" value="1">Exportar</button>
+      <div style="display:flex;gap:10px;align-items:end;">
+        <button class="btn btn-secundario" type="submit">Pré-visualizar</button>
+        <button class="btn btn-primario" type="submit" name="exportar" value="1">Exportar</button>
+      </div>
     </div>
   </form>
 </div>
 
 {% if resumo %}
 <div class="card">
-  <div style="display:flex;gap:28px;margin-bottom:16px;">
+  <div style="display:flex;gap:28px;margin-bottom:16px;flex-wrap:wrap;">
     <div>
       <div class="eyebrow" style="font-family:var(--font-mono);font-size:11px;text-transform:uppercase;color:var(--ink-faint);">Total trabalhado</div>
       <div class="tabular" style="font-size:20px;font-weight:600;">{{ resumo.total_trabalhado_fmt }}</div>
+    </div>
+    <div>
+      <div class="eyebrow" style="font-family:var(--font-mono);font-size:11px;text-transform:uppercase;color:var(--ink-faint);">Excesso de pausas</div>
+      <div class="tabular" style="font-size:20px;font-weight:600;">{{ resumo.total_excesso_pausas_fmt }}</div>
     </div>
     <div>
       <div class="eyebrow" style="font-family:var(--font-mono);font-size:11px;text-transform:uppercase;color:var(--ink-faint);">Saldo do período</div>
@@ -34,8 +40,9 @@
   </div>
 
   {% if resumo.linhas %}
+  <div class="table-scroll">
   <table>
-    <thead><tr><th>Data</th><th>Entrada</th><th>Saída</th><th>Trabalhado</th><th>Saldo</th></tr></thead>
+    <thead><tr><th>Data</th><th>Entrada</th><th>Saída</th><th>Trabalhado</th><th>Almoço</th><th>Outras pausas</th><th>Excesso</th><th>Saldo</th></tr></thead>
     <tbody>
       {% for linha in resumo.linhas %}
       <tr>
@@ -43,11 +50,15 @@
         <td class="tabular">{{ linha.lancamento.hora_entrada.strftime('%H:%M') }}</td>
         <td class="tabular">{{ linha.lancamento.hora_saida.strftime('%H:%M') if linha.lancamento.hora_saida else '—' }}</td>
         <td class="tabular">{{ linha.trabalhado_fmt }}</td>
+        <td class="tabular">{{ linha.almoco_fmt }}</td>
+        <td class="tabular">{{ linha.outras_pausas_fmt }}</td>
+        <td class="tabular">{{ linha.excesso_fmt }}</td>
         <td class="tabular" style="font-weight:600;color:{{ 'var(--positivo)' if linha.saldo.total_seconds() >= 0 else 'var(--negativo)' }}">{{ linha.saldo_fmt }}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
+  </div>
   {% else %}
   <div class="empty-state">Nenhum lançamento no período selecionado.</div>
   {% endif %}

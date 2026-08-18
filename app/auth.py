@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
 
@@ -15,11 +17,28 @@ def login():
 
     form = LoginForm()
     if form.validate_on_submit():
-        usuario = User.query.filter_by(email=form.email.data.lower().strip()).first()
+        email = form.email.data.lower().strip()
+        usuario = User.query.filter_by(email=email).first()
+
+        # Mensagem genérica em todos os casos de falha, para não revelar se o
+        # e-mail existe, se a conta está bloqueada, etc. (evita enumeração de contas).
+        if usuario and usuario.esta_bloqueado():
+            flash("Conta temporariamente bloqueada por excesso de tentativas. Tente novamente mais tarde.", "erro")
+            return render_template("auth/login.html", form=form)
+
         if usuario and usuario.ativo and usuario.checar_senha(form.senha.data):
+            usuario.registrar_login_sucesso()
+            db.session.commit()
             login_user(usuario, remember=form.lembrar.data)
             destino = request.args.get("next")
+            # Só aceita "next" relativo, para evitar redirecionamento aberto (open redirect)
+            if destino and not destino.startswith("/"):
+                destino = None
             return redirect(destino or url_for("main.dashboard"))
+
+        if usuario:
+            usuario.registrar_falha_login()
+            db.session.commit()
         flash("E-mail ou senha inválidos.", "erro")
 
     return render_template("auth/login.html", form=form)
@@ -34,7 +53,7 @@ def cadastro():
     if form.validate_on_submit():
         email = form.email.data.lower().strip()
         if User.query.filter_by(email=email).first():
-            flash("Já existe uma conta com este e-mail.", "erro")
+            flash("Não foi possível concluir o cadastro com os dados informados.", "erro")
             return render_template("auth/cadastro.html", form=form)
 
         usuario = User(nome=form.nome.data.strip(), email=email, matricula=form.matricula.data or None)

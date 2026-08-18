@@ -35,7 +35,7 @@
     </div>
     <div class="card mini-stat">
       <div class="eyebrow">Jornada padrão</div>
-      <div class="valor">{{ resumo_semana.jornada_padrao }}h /dia</div>
+      <div class="valor">{{ jornada.horas }}h /dia</div>
     </div>
   </div>
 </div>
@@ -71,12 +71,15 @@
         →
         <span class="tabular">{{ lanc.hora_saida.strftime('%H:%M') if lanc.hora_saida else '—' }}</span>
         {% if lanc.pausas %}<span class="tag">{{ lanc.pausas|length }} pausa{{ 's' if lanc.pausas|length > 1 }}</span>{% endif %}
+        {% if not lanc.em_aberto() and lanc.excesso_pausas(jornada).total_seconds() > 0 %}
+          <span class="tag" style="color:var(--negativo);border-color:var(--negativo);">pausa excedeu {{ lanc.excesso_pausas(jornada)|fmt_duracao }}</span>
+        {% endif %}
         {% if lanc.observacao %}<div class="obs">{{ lanc.observacao }}</div>{% endif %}
       </div>
       {% if lanc.em_aberto() %}
         <div class="extrato-saldo aberto">em aberto</div>
       {% else %}
-        {% set saldo = lanc.saldo_dia(resumo_semana.jornada_padrao) %}
+        {% set saldo = lanc.saldo_dia(jornada) %}
         <div class="extrato-saldo {{ 'positivo' if saldo.total_seconds() >= 0 else 'negativo' }}">
           {{ saldo|fmt_saldo }}
         </div>

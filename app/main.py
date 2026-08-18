@@ -1,4 +1,5 @@
 import base64
+import io
 from datetime import date
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, abort
@@ -11,16 +12,18 @@ from app.calculations import banco_de_horas_total, resumo_periodo, limites_seman
 
 bp = Blueprint("main", __name__)
 
+TAMANHO_MAX_FOTO_PX = 512  # redimensiona fotos grandes para economizar espaço no banco
+
 
 @bp.route("/")
 @login_required
 def dashboard():
-    jornada_padrao = current_app.config["JORNADA_PADRAO_HORAS"]
+    jornada = current_user.parametros_jornada(current_app.config)
     hoje = date.today()
 
-    saldo_total = banco_de_horas_total(current_user, jornada_padrao)
-    resumo_semana = resumo_periodo(current_user, jornada_padrao, *limites_semana(hoje))
-    resumo_mes = resumo_periodo(current_user, jornada_padrao, *limites_mes(hoje))
+    saldo_total = banco_de_horas_total(current_user, jornada)
+    resumo_semana = resumo_periodo(current_user, jornada, *limites_semana(hoje))
+    resumo_mes = resumo_periodo(current_user, jornada, *limites_mes(hoje))
 
     lancamento_hoje = TimeEntry.query.filter_by(user_id=current_user.id, data=hoje).first()
     ultimos = (
@@ -36,6 +39,7 @@ def dashboard():
         lancamento_hoje=lancamento_hoje,
         ultimos=ultimos,
         hoje=hoje,
+        jornada=jornada,
     )
 
 
@@ -143,26 +147,59 @@ def historico():
         current_user.lancamentos.order_by(TimeEntry.data.desc())
         .paginate(page=pagina, per_page=20, error_out=False)
     )
-    jornada_padrao = current_app.config["JORNADA_PADRAO_HORAS"]
-    return render_template("main/historico.html", paginacao=paginacao, jornada_padrao=jornada_padrao)
+    jornada = current_user.parametros_jornada(current_app.config)
+    return render_template("main/historico.html", paginacao=paginacao, jornada=jornada)
 
 
 @bp.route("/perfil", methods=["GET", "POST"])
 @login_required
 def perfil():
     form = PerfilForm(obj=current_user)
+    if request.method == "GET":
+        form.almoco_padrao_minutos.data = current_user.almoco_padrao_minutos
+        form.pausas_padrao_minutos.data = current_user.pausas_padrao_minutos
+
     if form.validate_on_submit():
         current_user.nome = form.nome.data.strip()
         current_user.jornada_diaria_horas = form.jornada_diaria_horas.data or None
+        current_user.almoco_padrao_minutos = (
+            int(form.almoco_padrao_minutos.data) if form.almoco_padrao_minutos.data is not None else None
+        )
+        current_user.pausas_padrao_minutos = (
+            int(form.pausas_padrao_minutos.data) if form.pausas_padrao_minutos.data is not None else None
+        )
 
         arquivo = form.foto.data
         if arquivo:
-            conteudo = arquivo.read()
-            mime = arquivo.mimetype
-            current_user.foto_perfil = f"data:{mime};base64,{base64.b64encode(conteudo).decode()}"
+            resultado = _processar_foto(arquivo)
+            if resultado is None:
+                flash("O arquivo enviado não parece ser uma imagem válida.", "erro")
+                return render_template("main/perfil.html", form=form)
+            current_user.foto_perfil = resultado
 
         db.session.commit()
         flash("Perfil atualizado.", "sucesso")
         return redirect(url_for("main.perfil"))
 
     return render_template("main/perfil.html", form=form)
+
+
+def _processar_foto(arquivo):
+    """Valida que o upload é realmente uma imagem, redimensiona e remove metadados
+    (EXIF pode conter geolocalização), antes de guardar como base64."""
+    from PIL import Image, UnidentifiedImageError
+
+    conteudo = arquivo.read()
+    try:
+        img = Image.open(io.BytesIO(conteudo))
+        img.verify()  # levanta exceção se não for uma imagem válida
+        img = Image.open(io.BytesIO(conteudo))  # verify() invalida o objeto; reabrir para uso
+        img = img.convert("RGB")
+    except (UnidentifiedImageError, OSError):
+        return None
+
+    img.thumbnail((TAMANHO_MAX_FOTO_PX, TAMANHO_MAX_FOTO_PX))
+    buffer = io.BytesIO()
+    img.save(buffer, format="JPEG", quality=85)  # re-salvar descarta EXIF/metadados originais
+    codificado = base64.b64encode(buffer.getvalue()).decode()
+    return f"data:image/jpeg;base64,{codificado}"

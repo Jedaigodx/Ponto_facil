@@ -1,7 +1,7 @@
 from flask import Flask
 
 from config import Config
-from app.extensions import db, login_manager
+from app.extensions import db, login_manager, csrf
 
 
 def create_app(config_class=Config):
@@ -10,6 +10,7 @@ def create_app(config_class=Config):
 
     db.init_app(app)
     login_manager.init_app(app)
+    csrf.init_app(app)
 
     from app.models import User
 
@@ -35,11 +36,23 @@ def create_app(config_class=Config):
     def data_br(data):
         return data.strftime("%d/%m")
 
-    from app.models import formatar_timedelta as _fmt_td
+    from app.models import formatar_timedelta as _fmt_td, formatar_duracao as _fmt_dur
 
     @app.template_filter("fmt_saldo")
     def fmt_saldo(td):
         return _fmt_td(td)
+
+    @app.template_filter("fmt_duracao")
+    def fmt_duracao(td):
+        return _fmt_dur(td)
+
+    @app.after_request
+    def cabecalhos_seguranca(resp):
+        # Cabeçalhos básicos de segurança (defesa em profundidade, não substituem HTTPS/Talisman).
+        resp.headers["X-Content-Type-Options"] = "nosniff"
+        resp.headers["X-Frame-Options"] = "DENY"
+        resp.headers["Referrer-Policy"] = "same-origin"
+        return resp
 
     with app.app_context():
         db.create_all()

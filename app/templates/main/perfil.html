@@ -26,10 +26,32 @@
           {{ form.nome.label }}
           {{ form.nome() }}
         </div>
-        <div>
-          {{ form.jornada_diaria_horas.label }}
-          {{ form.jornada_diaria_horas(placeholder="Padrão do sistema: " ~ config.JORNADA_PADRAO_HORAS ~ "h") }}
-        </div>
+
+        <fieldset>
+          <legend>Jornada e pausas</legend>
+          <div class="form-grid">
+            <div>
+              {{ form.jornada_diaria_horas.label }}
+              {{ form.jornada_diaria_horas(placeholder="Padrão do sistema: " ~ config.JORNADA_PADRAO_HORAS ~ "h") }}
+              <p class="campo-ajuda">Quantidade líquida de horas de trabalho esperadas por dia.</p>
+            </div>
+            <div class="form-row">
+              <div>
+                {{ form.almoco_padrao_minutos.label }}
+                {{ form.almoco_padrao_minutos(placeholder="Padrão: " ~ config.ALMOCO_PADRAO_MINUTOS ~ " min") }}
+              </div>
+              <div>
+                {{ form.pausas_padrao_minutos.label }}
+                {{ form.pausas_padrao_minutos(placeholder="Padrão: " ~ config.PAUSAS_PADRAO_MINUTOS ~ " min") }}
+              </div>
+            </div>
+            <p class="campo-ajuda">
+              Pausas dentro desse tempo não descontam do banco de horas. Só o que ultrapassar
+              esses limites é descontado do seu saldo.
+            </p>
+          </div>
+        </fieldset>
+
         <div>
           {{ form.foto.label }}
           {{ form.foto() }}
