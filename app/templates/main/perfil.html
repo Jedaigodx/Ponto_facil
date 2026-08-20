@@ -26,10 +26,36 @@
           {{ form.nome.label }}
           {{ form.nome() }}
         </div>
-        <div>
-          {{ form.jornada_diaria_horas.label }}
-          {{ form.jornada_diaria_horas(placeholder="Padrão do sistema: " ~ config.JORNADA_PADRAO_HORAS ~ "h") }}
-        </div>
+
+        <fieldset>
+          <legend>Jornada e pausas</legend>
+          <div class="form-grid">
+            <div>
+              {{ form.jornada_diaria_horas.label }}
+              {{ form.jornada_diaria_horas(placeholder="Padrão do sistema: " ~ config.JORNADA_PADRAO_HORAS ~ "h") }}
+              <p class="campo-ajuda">
+                Jornada TOTAL prevista (do horário de entrada ao de saída), já incluindo as
+                pausas abaixo. Ex.: jornada de 10h com 1h de almoço = 9h líquidas de trabalho esperadas.
+              </p>
+            </div>
+            <div class="form-row">
+              <div>
+                {{ form.almoco_padrao_minutos.label }}
+                {{ form.almoco_padrao_minutos(placeholder="Padrão: " ~ config.ALMOCO_PADRAO_MINUTOS ~ " min") }}
+              </div>
+              <div>
+                {{ form.pausas_padrao_minutos.label }}
+                {{ form.pausas_padrao_minutos(placeholder="Padrão: " ~ config.PAUSAS_PADRAO_MINUTOS ~ " min") }}
+              </div>
+            </div>
+            <p class="campo-ajuda">
+              Essas pausas já fazem parte da jornada total acima. Se a pausa realizada no dia
+              ficar dentro desse tempo previsto, o saldo não é afetado — só o que ultrapassar
+              é descontado do banco de horas.
+            </p>
+          </div>
+        </fieldset>
+
         <div>
           {{ form.foto.label }}
           {{ form.foto() }}

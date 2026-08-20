@@ -1,21 +1,19 @@
 from datetime import timedelta, date
 from calendar import monthrange
 
-from app.models import TimeEntry, formatar_timedelta
+from app.models import TimeEntry, formatar_timedelta, formatar_duracao
 
 
-def banco_de_horas_total(user, jornada_padrao_horas):
+def banco_de_horas_total(user, jornada):
     """Soma o saldo (positivo/negativo) de TODOS os lançamentos fechados do usuário."""
-    jornada = user.jornada_horas(jornada_padrao_horas)
     total = timedelta()
     for lanc in user.lancamentos.filter(TimeEntry.hora_saida.isnot(None)).all():
         total += lanc.saldo_dia(jornada)
     return total
 
 
-def resumo_periodo(user, jornada_padrao_horas, data_inicio, data_fim):
-    """Retorna lista de lançamentos no período + totais (trabalhado, saldo)."""
-    jornada = user.jornada_horas(jornada_padrao_horas)
+def resumo_periodo(user, jornada, data_inicio, data_fim):
+    """Retorna lista de lançamentos no período + totais (trabalhado, saldo, pausas)."""
     lancamentos = (
         user.lancamentos
         .filter(TimeEntry.data >= data_inicio, TimeEntry.data <= data_fim)
@@ -25,29 +23,38 @@ def resumo_periodo(user, jornada_padrao_horas, data_inicio, data_fim):
 
     total_trabalhado = timedelta()
     total_saldo = timedelta()
+    total_excesso_pausas = timedelta()
     linhas = []
 
     for lanc in lancamentos:
         trabalhado = lanc.horas_trabalhadas()
-        saldo = lanc.saldo_dia(jornada) if trabalhado is not None else timedelta()
+        saldo = lanc.saldo_dia(jornada)
+        almoco_dur, outras_dur = lanc.duracao_pausas_por_tipo()
+        excesso = lanc.excesso_pausas(jornada)
+
         if trabalhado is not None:
             total_trabalhado += trabalhado
             total_saldo += saldo
+            total_excesso_pausas += excesso
+
         linhas.append({
             "lancamento": lanc,
-            "trabalhado": trabalhado,
-            "trabalhado_fmt": formatar_timedelta(trabalhado) if trabalhado is not None else "em aberto",
+            "trabalhado_fmt": formatar_duracao(trabalhado) if trabalhado is not None else "em aberto",
             "saldo": saldo,
             "saldo_fmt": formatar_timedelta(saldo) if trabalhado is not None else "-",
+            "almoco_fmt": formatar_duracao(almoco_dur) if almoco_dur else "-",
+            "outras_pausas_fmt": formatar_duracao(outras_dur) if outras_dur else "-",
+            "excesso_fmt": formatar_duracao(excesso) if excesso else "-",
         })
 
     return {
         "linhas": linhas,
         "total_trabalhado": total_trabalhado,
-        "total_trabalhado_fmt": formatar_timedelta(total_trabalhado),
+        "total_trabalhado_fmt": formatar_duracao(total_trabalhado),
         "total_saldo": total_saldo,
         "total_saldo_fmt": formatar_timedelta(total_saldo),
-        "jornada_padrao": jornada,
+        "total_excesso_pausas_fmt": formatar_duracao(total_excesso_pausas),
+        "jornada": jornada,
         "dias_uteis_considerados": len(lancamentos),
     }
 

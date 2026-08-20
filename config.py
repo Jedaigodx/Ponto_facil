@@ -15,10 +15,24 @@ class Config:
     SQLALCHEMY_DATABASE_URI = _db_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # Jornada padrão diária usada para calcular o banco de horas (em horas decimais)
+    # Jornada padrão diária usada para calcular o banco de horas (em horas decimais).
+    # Pode ser sobrescrita por usuário na página de Perfil.
     JORNADA_PADRAO_HORAS = float(os.environ.get("JORNADA_PADRAO_HORAS", "8"))
 
-    # Sessão de login
+    # Tempo de pausa (em minutos) tolerado sem descontar do banco de horas.
+    # Só o que ultrapassar esses valores e descontado do saldo.
+    ALMOCO_PADRAO_MINUTOS = int(os.environ.get("ALMOCO_PADRAO_MINUTOS", "60"))
+    PAUSAS_PADRAO_MINUTOS = int(os.environ.get("PAUSAS_PADRAO_MINUTOS", "15"))
+
+    # Sessao de login
     PERMANENT_SESSION_LIFETIME = timedelta(days=14)
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    # Em producao (Railway serve via HTTPS) o cookie de sessao so deve trafegar por HTTPS.
+    # Defina SESSION_COOKIE_SECURE=1 (padrao) nas variaveis do Railway; use 0 apenas em dev http local.
+    SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "1") == "1"
 
     MAX_CONTENT_LENGTH = 4 * 1024 * 1024  # 4MB, limite de upload (foto de perfil)
+
+    # Debug NUNCA deve ficar ligado em producao (exposicao do werkzeug debugger = RCE).
+    DEBUG = os.environ.get("FLASK_DEBUG", "0") == "1"

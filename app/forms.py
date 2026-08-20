@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, BooleanField, DateField, TimeField, SelectField, TextAreaField, FloatField
+from wtforms import StringField, PasswordField, BooleanField, DateField, TimeField, SelectField, TextAreaField, FloatField, IntegerField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, NumberRange
 
 
@@ -14,7 +14,7 @@ class RegisterForm(FlaskForm):
     nome = StringField("Nome completo", validators=[DataRequired(), Length(max=120)])
     email = StringField("E-mail", validators=[DataRequired(), Email(), Length(max=160)])
     matricula = StringField("Matrícula (opcional)", validators=[Optional(), Length(max=40)])
-    senha = PasswordField("Senha", validators=[DataRequired(), Length(min=6, message="Mínimo de 6 caracteres.")])
+    senha = PasswordField("Senha", validators=[DataRequired(), Length(min=8, message="Mínimo de 8 caracteres.")])
     confirmar_senha = PasswordField(
         "Confirmar senha",
         validators=[DataRequired(), EqualTo("senha", message="As senhas não coincidem.")],
@@ -36,7 +36,15 @@ class LancamentoCompletoForm(FlaskForm):
 class PerfilForm(FlaskForm):
     nome = StringField("Nome completo", validators=[DataRequired(), Length(max=120)])
     jornada_diaria_horas = FloatField(
-        "Jornada diária (horas)", validators=[Optional(), NumberRange(min=1, max=16)]
+        "Jornada diária total (horas)", validators=[Optional(), NumberRange(min=1, max=16)]
+    )
+    almoco_padrao_minutos = IntegerField(
+        "Pausa de almoço tolerada (minutos)",
+        validators=[Optional(), NumberRange(min=0, max=240, message="Entre 0 e 240 minutos.")],
+    )
+    pausas_padrao_minutos = IntegerField(
+        "Outras pausas toleradas por dia (minutos)",
+        validators=[Optional(), NumberRange(min=0, max=120, message="Entre 0 e 120 minutos.")],
     )
     foto = FileField("Foto de perfil", validators=[Optional(), FileAllowed(["jpg", "jpeg", "png"], "Apenas imagens JPG ou PNG.")])
 

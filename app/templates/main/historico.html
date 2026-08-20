@@ -9,30 +9,34 @@
 
 <div class="card">
   {% if paginacao.items %}
+  <div class="table-scroll">
   <table>
     <thead>
       <tr>
-        <th>Data</th><th>Entrada</th><th>Saída</th><th>Pausas</th><th>Saldo do dia</th><th></th>
+        <th>Data</th><th>Entrada</th><th>Saída</th><th>Almoço</th><th>Outras pausas</th><th>Saldo do dia</th><th></th>
       </tr>
     </thead>
     <tbody>
       {% for lanc in paginacao.items %}
+      {% set almoco, outras = lanc.duracao_pausas_por_tipo() %}
       <tr>
         <td class="tabular">{{ lanc.data|data_br }} <span style="color:var(--ink-faint);">{{ lanc.data|dia_semana }}</span></td>
         <td class="tabular">{{ lanc.hora_entrada.strftime('%H:%M') }}</td>
         <td class="tabular">{{ lanc.hora_saida.strftime('%H:%M') if lanc.hora_saida else '—' }}</td>
-        <td>{{ lanc.pausas|length }}</td>
+        <td class="tabular">{{ almoco|fmt_duracao if almoco.total_seconds() > 0 else '—' }}</td>
+        <td class="tabular">{{ outras|fmt_duracao if outras.total_seconds() > 0 else '—' }}</td>
         <td>
           {% if lanc.em_aberto() %}
             <span style="color:var(--ink-faint);">em aberto</span>
           {% else %}
-            {% set saldo = lanc.saldo_dia(current_user.jornada_horas(jornada_padrao)) %}
+            {% set saldo = lanc.saldo_dia(jornada) %}
             <span class="tabular" style="font-weight:600;color:{{ 'var(--positivo)' if saldo.total_seconds() >= 0 else 'var(--negativo)' }}">{{ saldo|fmt_saldo }}</span>
           {% endif %}
         </td>
         <td class="acoes">
           <a href="{{ url_for('main.editar_lancamento', entry_id=lanc.id) }}">Editar</a>
           <form method="POST" action="{{ url_for('main.excluir_lancamento', entry_id=lanc.id) }}" onsubmit="return confirm('Excluir este lançamento?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="excluir">Excluir</button>
           </form>
         </td>
@@ -40,6 +44,7 @@
       {% endfor %}
     </tbody>
   </table>
+  </div>
 
   {% if paginacao.pages > 1 %}
   <div class="paginacao">

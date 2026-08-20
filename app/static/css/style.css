@@ -225,6 +225,7 @@ input:focus, select:focus, textarea:focus {
 }
 fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; margin: 0; }
 legend { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); padding: 0 6px; }
+.campo-ajuda { font-size: 12px; color: var(--ink-faint); margin: 4px 0 0; }
 
 .btn {
   display: inline-flex;
@@ -311,11 +312,53 @@ tbody tr:last-child td { border-bottom: none; }
 }
 .paginacao .atual { background: var(--ink); color: #fff; border-color: var(--ink); }
 
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-scroll table { min-width: 560px; }
+
+.relatorio-form-row { grid-template-columns: 1fr 1fr 1fr auto; align-items: end; gap: 12px; }
+
 @media (max-width: 780px) {
   .shell { flex-direction: column; }
-  .sidebar { width: 100%; flex-direction: row; align-items: center; padding: 14px 18px; }
-  .nav { flex-direction: row; }
-  .sidebar-footer { margin-top: 0; margin-left: auto; border: none; padding: 0; }
-  .main { padding: 20px; }
-  .grid-2, .grid-3, .form-row { grid-template-columns: 1fr; }
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    gap: 0;
+  }
+  .sidebar .nav {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 40;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+    gap: 0;
+  }
+  .sidebar .nav a {
+    flex-direction: column;
+    gap: 3px;
+    padding: 6px 8px;
+    font-size: 10px;
+    border-radius: 8px;
+    text-align: center;
+  }
+  .sidebar .nav a svg { width: 19px; height: 19px; }
+  .sidebar-footer { margin: 0; border: none; padding: 0; }
+  .sidebar-footer .nome { display: none; }
+  .main { padding: 18px 16px 96px; }
+  .grid-2, .grid-3, .form-row, .relatorio-form-row { grid-template-columns: 1fr !important; }
+  .saldo-valor { font-size: 34px; }
+  .saldo-hero { padding: 22px 20px; }
+  .extrato-linha { grid-template-columns: 64px 1fr auto; gap: 10px; }
+  .card { padding: 18px; }
 }
