@@ -6,9 +6,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from app.extensions import db
 
-# Parâmetros de jornada resolvidos (usuário -> sobrepõe padrão do sistema).
-# `horas` é a jornada TOTAL prevista (permanência, já incluindo as pausas abaixo) —
-# ex.: 10h de jornada com 1h de almoço = 9h líquidas de trabalho esperadas.
 class JornadaConfig(namedtuple("JornadaConfig", ["horas", "almoco_min", "pausas_min"])):
     @property
     def pausa_prevista(self):
