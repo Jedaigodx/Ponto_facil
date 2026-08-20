@@ -72,16 +72,10 @@ def _exportar_csv(resumo, inicio, fim):
     writer.writerow(["Saldo do período", resumo["total_saldo_fmt"]])
     writer.writerow([])
     writer.writerow([
-<<<<<<< HEAD
         f"Jornada considerada: {resumo['jornada'].horas}h/dia total "
         f"({formatar_duracao(resumo['jornada'].liquido_esperado)} liquidas esperadas) — "
         f"almoço previsto: {resumo['jornada'].almoco_min}min — "
         f"outras pausas previstas: {resumo['jornada'].pausas_min}min"
-=======
-        f"Jornada considerada: {resumo['jornada'].horas}h/dia — "
-        f"almoço tolerado: {resumo['jornada'].almoco_min}min — "
-        f"outras pausas toleradas: {resumo['jornada'].pausas_min}min"
->>>>>>> c848baf12b34a1f3ceb88b3b02dc68a5bfdfa1c0
     ])
 
     mem = io.BytesIO(buffer.getvalue().encode("utf-8-sig"))
@@ -107,13 +101,8 @@ def _exportar_pdf(resumo, inicio, fim, periodo):
     elementos.append(Paragraph(f"Período: {inicio.strftime('%d/%m/%Y')} a {fim.strftime('%d/%m/%Y')}", estilos["Normal"]))
     jornada = resumo["jornada"]
     elementos.append(Paragraph(
-<<<<<<< HEAD
         f"Jornada: {jornada.horas}h/dia total ({formatar_duracao(jornada.liquido_esperado)} líquidas) · "
         f"almoço previsto: {jornada.almoco_min}min · outras pausas previstas: {jornada.pausas_min}min",
-=======
-        f"Jornada: {jornada.horas}h/dia · almoço tolerado: {jornada.almoco_min}min · "
-        f"outras pausas toleradas: {jornada.pausas_min}min",
->>>>>>> c848baf12b34a1f3ceb88b3b02dc68a5bfdfa1c0
         estilos["Normal"],
     ))
     elementos.append(Spacer(1, 0.5 * cm))

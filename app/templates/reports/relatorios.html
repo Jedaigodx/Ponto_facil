@@ -25,13 +25,10 @@
 {% if resumo %}
 <div class="card">
   <div style="display:flex;gap:28px;margin-bottom:16px;flex-wrap:wrap;">
-<<<<<<< HEAD
     <div>
       <div class="eyebrow" style="font-family:var(--font-mono);font-size:11px;text-transform:uppercase;color:var(--ink-faint);">Jornada considerada</div>
       <div class="tabular" style="font-size:15px;font-weight:600;">{{ resumo.jornada.horas }}h total ({{ resumo.jornada.liquido_esperado|fmt_duracao }} líquidas/dia)</div>
     </div>
-=======
->>>>>>> c848baf12b34a1f3ceb88b3b02dc68a5bfdfa1c0
     <div>
       <div class="eyebrow" style="font-family:var(--font-mono);font-size:11px;text-transform:uppercase;color:var(--ink-faint);">Total trabalhado</div>
       <div class="tabular" style="font-size:20px;font-weight:600;">{{ resumo.total_trabalhado_fmt }}</div>
