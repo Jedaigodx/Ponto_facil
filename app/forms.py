@@ -46,6 +46,14 @@ class PerfilForm(FlaskForm):
         "Outras pausas toleradas por dia (minutos)",
         validators=[Optional(), NumberRange(min=0, max=120, message="Entre 0 e 120 minutos.")],
     )
+    almoco_padrao_minutos = IntegerField(
+        "Pausa de almoço tolerada (minutos)",
+        validators=[Optional(), NumberRange(min=0, max=240, message="Entre 0 e 240 minutos.")],
+    )
+    pausas_padrao_minutos = IntegerField(
+        "Outras pausas toleradas por dia (minutos)",
+        validators=[Optional(), NumberRange(min=0, max=120, message="Entre 0 e 120 minutos.")],
+    )
     foto = FileField("Foto de perfil", validators=[Optional(), FileAllowed(["jpg", "jpeg", "png"], "Apenas imagens JPG ou PNG.")])
 
 

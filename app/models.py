@@ -6,6 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from app.extensions import db
 
+<<<<<<< HEAD
 # Parâmetros de jornada resolvidos (usuário -> sobrepõe padrão do sistema).
 # `horas` é a jornada TOTAL prevista (permanência, já incluindo as pausas abaixo) —
 # ex.: 10h de jornada com 1h de almoço = 9h líquidas de trabalho esperadas.
@@ -19,6 +20,10 @@ class JornadaConfig(namedtuple("JornadaConfig", ["horas", "almoco_min", "pausas_
     def liquido_esperado(self):
         """Horas líquidas de trabalho esperadas = jornada total - pausas previstas."""
         return timedelta(hours=self.horas) - self.pausa_prevista
+=======
+# Parâmetros de jornada resolvidos (usuário -> sobrepõe padrão do sistema)
+JornadaConfig = namedtuple("JornadaConfig", ["horas", "almoco_min", "pausas_min"])
+>>>>>>> c848baf12b34a1f3ceb88b3b02dc68a5bfdfa1c0
 
 MAX_TENTATIVAS_LOGIN = 5
 BLOQUEIO_MINUTOS = 15
@@ -65,6 +70,7 @@ class User(UserMixin, db.Model):
     def esta_bloqueado(self):
         return bool(self.bloqueado_ate and self.bloqueado_ate > datetime.utcnow())
 
+<<<<<<< HEAD
     def get_id(self):
         # Inclui o hash da senha no identificador de sessão: se a conta for recriada
         # (ex.: banco de dados apagado e recriado) ou a senha for trocada, qualquer
@@ -72,6 +78,8 @@ class User(UserMixin, db.Model):
         # em vez de "herdar" por coincidência um ID de usuário reaproveitado.
         return f"{self.id}:{self.senha_hash[-12:]}"
 
+=======
+>>>>>>> c848baf12b34a1f3ceb88b3b02dc68a5bfdfa1c0
     def registrar_falha_login(self):
         self.tentativas_falhas = (self.tentativas_falhas or 0) + 1
         if self.tentativas_falhas >= MAX_TENTATIVAS_LOGIN:
@@ -158,6 +166,7 @@ class TimeEntry(db.Model):
         return almoco + outras
 
     def excesso_pausas(self, jornada: JornadaConfig):
+<<<<<<< HEAD
         """Retorna quanto do tempo de pausa ultrapassou o previsto (para exibir no relatório).
         Informativo: o próprio saldo_dia já reflete esse excesso automaticamente,
         pois usa o tempo de pausa REAL, não o previsto."""
@@ -165,15 +174,34 @@ class TimeEntry(db.Model):
 
     def horas_trabalhadas(self):
         """Tempo líquido efetivamente trabalhado (permanência menos as pausas realizadas)."""
+=======
+        """Retorna o tempo de pausa que ultrapassou o tolerado (não conta a favor do funcionário)."""
+        almoco_realizado, outras_realizado = self.duracao_pausas_por_tipo()
+        excesso_almoco = max(timedelta(), almoco_realizado - timedelta(minutes=jornada.almoco_min))
+        excesso_outras = max(timedelta(), outras_realizado - timedelta(minutes=jornada.pausas_min))
+        return excesso_almoco + excesso_outras
+
+    def horas_trabalhadas(self):
+        """Tempo efetivamente trabalhado (permanência menos TODAS as pausas). Informativo."""
+>>>>>>> c848baf12b34a1f3ceb88b3b02dc68a5bfdfa1c0
         bruto = self._bruto()
         if bruto is None:
             return None
         return bruto - self.duracao_pausas()
 
+    def horas_creditadas(self, jornada: JornadaConfig):
+        """Tempo considerado para o banco de horas: pausas dentro do tolerado não descontam,
+        só o excesso é descontado."""
+        bruto = self._bruto()
+        if bruto is None:
+            return None
+        return bruto - self.excesso_pausas(jornada)
+
     def em_aberto(self):
         return self.hora_saida is None
 
     def saldo_dia(self, jornada: JornadaConfig):
+<<<<<<< HEAD
         """Saldo do dia = trabalhado líquido real - trabalhado líquido esperado.
 
         A jornada esperada já embute a pausa prevista (ex.: jornada de 10h com 1h de
@@ -186,6 +214,13 @@ class TimeEntry(db.Model):
         if trabalhado is None:
             return timedelta()
         return trabalhado - jornada.liquido_esperado
+=======
+        """Retorna timedelta de saldo (positivo ou negativo) em relação à jornada padrão."""
+        creditadas = self.horas_creditadas(jornada)
+        if creditadas is None:
+            return timedelta()
+        return creditadas - timedelta(hours=jornada.horas)
+>>>>>>> c848baf12b34a1f3ceb88b3b02dc68a5bfdfa1c0
 
     def __repr__(self):
         return f"<TimeEntry {self.data} user={self.user_id}>"

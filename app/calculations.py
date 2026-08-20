@@ -27,6 +27,7 @@ def resumo_periodo(user, jornada, data_inicio, data_fim):
     linhas = []
 
     for lanc in lancamentos:
+<<<<<<< HEAD
         trabalhado = lanc.horas_trabalhadas()
         saldo = lanc.saldo_dia(jornada)
         almoco_dur, outras_dur = lanc.duracao_pausas_por_tipo()
@@ -34,14 +35,29 @@ def resumo_periodo(user, jornada, data_inicio, data_fim):
 
         if trabalhado is not None:
             total_trabalhado += trabalhado
+=======
+        creditadas = lanc.horas_creditadas(jornada)
+        saldo = lanc.saldo_dia(jornada) if creditadas is not None else timedelta()
+        almoco_dur, outras_dur = lanc.duracao_pausas_por_tipo()
+        excesso = lanc.excesso_pausas(jornada)
+
+        if creditadas is not None:
+            total_trabalhado += lanc.horas_trabalhadas()
+>>>>>>> c848baf12b34a1f3ceb88b3b02dc68a5bfdfa1c0
             total_saldo += saldo
             total_excesso_pausas += excesso
 
         linhas.append({
             "lancamento": lanc,
+<<<<<<< HEAD
             "trabalhado_fmt": formatar_duracao(trabalhado) if trabalhado is not None else "em aberto",
             "saldo": saldo,
             "saldo_fmt": formatar_timedelta(saldo) if trabalhado is not None else "-",
+=======
+            "trabalhado_fmt": formatar_duracao(lanc.horas_trabalhadas()) if creditadas is not None else "em aberto",
+            "saldo": saldo,
+            "saldo_fmt": formatar_timedelta(saldo) if creditadas is not None else "-",
+>>>>>>> c848baf12b34a1f3ceb88b3b02dc68a5bfdfa1c0
             "almoco_fmt": formatar_duracao(almoco_dur) if almoco_dur else "-",
             "outras_pausas_fmt": formatar_duracao(outras_dur) if outras_dur else "-",
             "excesso_fmt": formatar_duracao(excesso) if excesso else "-",
